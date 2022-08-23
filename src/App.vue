@@ -4,7 +4,7 @@ import MineGrid from "@/components/MineGrid.vue";
 
 <template>
   <main>
-    <MineGrid />
+    <MineGrid height="80vh" />
   </main>
 </template>
 
@@ -18,7 +18,7 @@ import MineGrid from "@/components/MineGrid.vue";
   min-height: 100vh;
   width: 100vw;
   display: grid;
-  grid-template: 10vh 1fr 10vh / 10vh 1fr 10vh;
+  grid-template: 10vh 80vh 10vh / 10vw 80vw 10vw;
 }
 
 main {

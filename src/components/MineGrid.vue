@@ -1,7 +1,9 @@
 <template>
   <div
     class="minefield"
-    v-bind:style="'--num-cols:' + width + '; --num-rows:' + height"
+    v-bind:style="
+      '--num-cols:' + columns + '; --num-rows:' + rows + '; --height:' + height
+    "
   >
     <button
       v-for="(patch, index) in patches"
@@ -19,19 +21,19 @@ export default defineComponent({
     return {
       patches: [] as any[],
       bombCount: 10,
-      height: 0,
-      width: 0,
+      rows: 0,
+      columns: 0,
 
       bombPositions: [] as any[],
     };
   },
   methods: {
-    setupGrid(height: number, width: number) {
-      this.height = height;
-      this.width = width;
+    setupGrid(rows: number, columns: number) {
+      this.rows = rows;
+      this.columns = columns;
 
-      for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < columns; x++) {
           this.patches[this.getIndex(x, y)] = {
             isBomb: false,
           };
@@ -40,14 +42,14 @@ export default defineComponent({
 
       for (let i = 0; i < this.bombCount; i++) {
         let position = {
-          x: Math.floor(Math.random() * width),
-          y: Math.floor(Math.random() * height),
+          x: Math.floor(Math.random() * columns),
+          y: Math.floor(Math.random() * rows),
         };
 
         while (this.bombPositions.find((pos) => pos === position)) {
           position = {
-            x: Math.floor(Math.random() * width),
-            y: Math.floor(Math.random() * height),
+            x: Math.floor(Math.random() * columns),
+            y: Math.floor(Math.random() * rows),
           };
         }
         this.bombPositions.push(position);
@@ -59,9 +61,10 @@ export default defineComponent({
       return this.patches[this.getIndex(x, y)];
     },
     getIndex(x: number, y: number) {
-      return y * this.width + x;
+      return y * this.columns + x;
     },
   },
+  props: ["height"],
   mounted() {
     this.setupGrid(20, 20);
   },
@@ -70,19 +73,18 @@ export default defineComponent({
 
 <style scoped>
 .minefield {
-  display: grid;
-  width: fit-content;
-  height: fit-content;
+  --height: 0;
   --num-cols: 0;
   --num-rows: 0;
+  display: grid;
+  width: calc((var(--num-cols) / var(--num-rows)) * var(--height));
+  height: var(--height);
   grid-template-columns: repeat(var(--num-cols), 1fr);
   grid-template-rows: repeat(var(--num-rows), 1fr);
   gap: 0;
 }
 
 button {
-  height: 1.5rem;
-  width: 1.5rem;
   border-width: 1px;
   background-color: gainsboro;
 }

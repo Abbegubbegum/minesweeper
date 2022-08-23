@@ -1,8 +1,13 @@
 <template>
-  <div class="grid">
-    <div v-for="(patchRow, y) in patches" class="row">
-      <button v-for="(patch, x) in patchRow" type="button"></button>
-    </div>
+  <div
+    class="minefield"
+    v-bind:style="'--num-cols:' + width + '; --num-rows:' + height"
+  >
+    <button
+      v-for="(patch, index) in patches"
+      type="button"
+      :class="{ bomb: patch.isBomb }"
+    ></button>
   </div>
 </template>
 
@@ -12,44 +17,81 @@ import { defineComponent } from "vue";
 export default defineComponent({
   data() {
     return {
-      patches: [] as Object[][],
+      patches: [] as any[],
+      bombCount: 10,
+      height: 0,
+      width: 0,
+
+      bombPositions: [] as any[],
     };
   },
   methods: {
-    setupGrid() {
-      this.patches = new Array(50);
-      for (let i = 0; i < 50; i++) {
-        this.patches[i] = new Array(50);
-        for (let j = 0; j < 50; j++) {
-          this.patches[i][j] = {
+    setupGrid(height: number, width: number) {
+      this.height = height;
+      this.width = width;
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          this.patches[this.getIndex(x, y)] = {
             isBomb: false,
           };
         }
       }
+
+      for (let i = 0; i < this.bombCount; i++) {
+        let position = {
+          x: Math.floor(Math.random() * width),
+          y: Math.floor(Math.random() * height),
+        };
+
+        while (this.bombPositions.find((pos) => pos === position)) {
+          position = {
+            x: Math.floor(Math.random() * width),
+            y: Math.floor(Math.random() * height),
+          };
+        }
+        this.bombPositions.push(position);
+
+        this.patches[this.getIndex(position.x, position.y)].isBomb = true;
+      }
+    },
+    getPatch(x: number, y: number) {
+      return this.patches[this.getIndex(x, y)];
+    },
+    getIndex(x: number, y: number) {
+      return y * this.width + x;
     },
   },
-
   mounted() {
-    this.setupGrid();
+    this.setupGrid(20, 20);
   },
 });
 </script>
 
-<style>
-.grid {
+<style scoped>
+.minefield {
   display: grid;
-  height: auto;
-  width: auto;
-  grid-auto-flow: row;
-}
-
-.row {
-  display: grid;
-  grid-auto-flow: column;
+  width: fit-content;
+  height: fit-content;
+  --num-cols: 0;
+  --num-rows: 0;
+  grid-template-columns: repeat(var(--num-cols), 1fr);
+  grid-template-rows: repeat(var(--num-rows), 1fr);
+  gap: 0;
 }
 
 button {
-  height: 1vw;
-  width: 1vw;
+  height: 1.5rem;
+  width: 1.5rem;
+  border-width: 1px;
+  background-color: gainsboro;
+}
+
+button:hover {
+  background-color: grey;
+}
+
+.bomb {
+  background-color: red;
 }
 </style>

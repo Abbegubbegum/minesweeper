@@ -8,7 +8,10 @@
     <button
       v-for="(patch, index) in patches"
       type="button"
-      :class="{ bomb: patch.isBomb, revealed: patch.isRevealed }"
+      :class="[
+        { bomb: patch.isBomb, revealed: patch.isRevealed },
+        labelClass(patch),
+      ]"
       @click="patchClick(patch)"
       @contextmenu.prevent="toggleFlag(patch)"
     >
@@ -29,6 +32,7 @@ export default defineComponent({
       columns: 0,
 
       bombPositions: [] as any[],
+      gameover: false,
     };
   },
 
@@ -123,14 +127,18 @@ export default defineComponent({
     },
 
     toggleFlag(patch: any) {
+      if (patch.isRevealed || this.gameover) return;
+
       patch.isFlagged = !patch.isFlagged;
     },
 
     patchClick(patch: any) {
-      if (patch.isFlagged) return;
+      if (patch.isFlagged || this.gameover) return;
 
       if (patch.isBomb === true) {
         console.log("Fail!");
+        this.gameover = true;
+        this.revealAllBombs();
       } else {
         this.revealPatch(patch);
       }
@@ -153,9 +161,24 @@ export default defineComponent({
 
       if (patch.isRevealed === false) return "";
 
+      if (patch.isBomb) return "💣";
+
       if (patch.bombCount === 0) return "";
 
       return patch.bombCount;
+    },
+
+    labelClass(patch: any) {
+      if (!patch.isRevealed) return "";
+
+      return "label-" + patch.bombCount;
+    },
+
+    revealAllBombs() {
+      this.bombPositions.forEach((pos) => {
+        if (!this.getPatch(pos.x, pos.y).isFlagged)
+          this.getPatch(pos.x, pos.y).isRevealed = true;
+      });
     },
   },
 
@@ -183,17 +206,41 @@ export default defineComponent({
 button {
   border-width: 1px;
   background-color: gainsboro;
+  font-size: 1.5rem;
+  font-weight: bold;
 }
 
 button:hover {
   background-color: grey;
 }
 
-/* .bomb {
-  background-color: red;
-} */
-
 .revealed {
   background-color: white;
+}
+
+.label-1 {
+  color: blue;
+}
+.label-2 {
+  color: green;
+}
+.label-3 {
+  color: red;
+}
+.label-4 {
+  color: purple;
+}
+.label-5 {
+  color: maroon;
+}
+.label-6 {
+  color: turquoise;
+}
+.label-7 {
+  color: black;
+}
+
+.label-8 {
+  color: grey;
 }
 </style>

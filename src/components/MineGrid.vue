@@ -8,8 +8,12 @@
     <button
       v-for="(patch, index) in patches"
       type="button"
-      :class="{ bomb: patch.isBomb }"
-    ></button>
+      :class="{ bomb: patch.isBomb, revealed: patch.isRevealed }"
+      @click="patchClick(patch)"
+      @contextmenu.prevent="toggleFlag(patch)"
+    >
+      {{ patchLabel(patch) }}
+    </button>
   </div>
 </template>
 
@@ -20,51 +24,143 @@ export default defineComponent({
   data() {
     return {
       patches: [] as any[],
-      bombCount: 10,
+      bombCount: 30,
       rows: 0,
       columns: 0,
 
       bombPositions: [] as any[],
     };
   },
+
   methods: {
     setupGrid(rows: number, columns: number) {
+      //set row and column to param
       this.rows = rows;
       this.columns = columns;
 
+      //instantiate the empty grid
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < columns; x++) {
           this.patches[this.getIndex(x, y)] = {
+            x: x,
+            y: y,
             isBomb: false,
+            isRevealed: false,
+            isFlagged: false,
+            neighbors: [],
+            bombCount: 0,
           };
         }
       }
 
+      // console.log(this.patches);
+
+      //Create bombs
       for (let i = 0; i < this.bombCount; i++) {
-        let position = {
+        let pos = {
           x: Math.floor(Math.random() * columns),
           y: Math.floor(Math.random() * rows),
         };
 
-        while (this.bombPositions.find((pos) => pos === position)) {
-          position = {
+        //Make sure the random position doesn't have a bomb
+        while (this.getPatch(pos.x, pos.y).isBomb === true) {
+          pos = {
             x: Math.floor(Math.random() * columns),
             y: Math.floor(Math.random() * rows),
           };
         }
-        this.bombPositions.push(position);
 
-        this.patches[this.getIndex(position.x, position.y)].isBomb = true;
+        //Debugging only probably
+        this.bombPositions.push(pos);
+
+        //Add the bomb
+        this.getPatch(pos.x, pos.y).isBomb = true;
       }
+
+      //Setup bombcounts and neighbors
+      this.patches.forEach((patch) => {
+        if (patch.isBomb) return;
+
+        // console.log(patch.neighbors);
+        // console.log(this.fetchNeighbors(patch.x, patch.y));
+
+        patch.neighbors = this.fetchNeighbors(patch.x, patch.y);
+
+        let bombCount = 0;
+        patch.neighbors.forEach((neighbor: any) => {
+          if (neighbor.isBomb) bombCount++;
+        });
+
+        patch.bombCount = bombCount;
+      });
     },
+
     getPatch(x: number, y: number) {
       return this.patches[this.getIndex(x, y)];
     },
     getIndex(x: number, y: number) {
       return y * this.columns + x;
     },
+
+    fetchNeighbors(x: number, y: number) {
+      let neighbors = [];
+      for (let tempY = y - 1; tempY <= y + 1; tempY++) {
+        //If tempY is valid, loop through the x
+        if (tempY >= 0 && tempY < this.rows) {
+          for (let tempX = x - 1; tempX <= x + 1; tempX++) {
+            //If it is not the original position, continue
+            if (tempX === x && tempY === y) continue;
+
+            //If tempX is valid, add the position
+            if (tempX >= 0 && tempX < this.columns) {
+              neighbors.push(this.getPatch(tempX, tempY));
+            }
+          }
+        }
+      }
+
+      return neighbors;
+    },
+
+    toggleFlag(patch: any) {
+      patch.isFlagged = !patch.isFlagged;
+    },
+
+    patchClick(patch: any) {
+      if (patch.isFlagged) return;
+
+      if (patch.isBomb === true) {
+        console.log("Fail!");
+      } else {
+        this.revealPatch(patch);
+      }
+    },
+
+    revealPatch(patch: any) {
+      if (patch.isFlagged || patch.isRevealed) return;
+
+      patch.isRevealed = true;
+
+      if (patch.bombCount === 0) {
+        patch.neighbors.forEach((neighbor: any) => {
+          this.revealPatch(neighbor);
+        });
+      }
+    },
+
+    patchLabel(patch: any) {
+      if (patch.isFlagged) return "🚩";
+
+      if (patch.isRevealed === false) return "";
+
+      if (patch.bombCount === 0) return "";
+
+      return patch.bombCount;
+    },
   },
+
   props: ["height"],
+
   mounted() {
     this.setupGrid(20, 20);
   },
@@ -93,7 +189,11 @@ button:hover {
   background-color: grey;
 }
 
-.bomb {
+/* .bomb {
   background-color: red;
+} */
+
+.revealed {
+  background-color: white;
 }
 </style>

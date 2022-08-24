@@ -37,10 +37,14 @@ export default defineComponent({
   },
 
   methods: {
-    setupGrid(rows: number, columns: number) {
+    setupGrid(rows: number, columns: number, bombCount: number) {
       //set row and column to param
       this.rows = rows;
       this.columns = columns;
+      this.bombCount = bombCount;
+      this.patches = [];
+      this.bombPositions = [];
+      this.gameover = false;
 
       //instantiate the empty grid
       for (let y = 0; y < rows; y++) {
@@ -185,7 +189,7 @@ export default defineComponent({
   props: ["height"],
 
   mounted() {
-    this.setupGrid(20, 20);
+    this.setupGrid(20, 20, 20);
   },
 });
 </script>
@@ -193,10 +197,11 @@ export default defineComponent({
 <style scoped>
 .minefield {
   --height: 0;
+  --width: calc((var(--num-cols) / var(--num-rows)) * var(--height));
   --num-cols: 0;
   --num-rows: 0;
   display: grid;
-  width: calc((var(--num-cols) / var(--num-rows)) * var(--height));
+  width: var(--width);
   height: var(--height);
   grid-template-columns: repeat(var(--num-cols), 1fr);
   grid-template-rows: repeat(var(--num-rows), 1fr);
@@ -206,7 +211,13 @@ export default defineComponent({
 button {
   border-width: 1px;
   background-color: gainsboro;
-  font-size: 1.5rem;
+  --font-percentage: 0.7;
+  font-size: calc(
+    min(
+      var(--height) / var(--num-rows) * var(--font-percentage),
+      var(--width) / var(--num-cols) * var(--font-percentage)
+    )
+  );
   font-weight: bold;
 }
 

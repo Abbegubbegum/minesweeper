@@ -33,6 +33,7 @@ export default defineComponent({
 
       bombPositions: [] as any[],
       gameover: false,
+      playerAlreadyClicked: false,
     };
   },
 
@@ -45,6 +46,7 @@ export default defineComponent({
       this.patches = [];
       this.bombPositions = [];
       this.gameover = false;
+      this.playerAlreadyClicked = false;
 
       //instantiate the empty grid
       for (let y = 0; y < rows; y++) {
@@ -65,24 +67,7 @@ export default defineComponent({
 
       //Create bombs
       for (let i = 0; i < this.bombCount; i++) {
-        let pos = {
-          x: Math.floor(Math.random() * columns),
-          y: Math.floor(Math.random() * rows),
-        };
-
-        //Make sure the random position doesn't have a bomb
-        while (this.getPatch(pos.x, pos.y).isBomb === true) {
-          pos = {
-            x: Math.floor(Math.random() * columns),
-            y: Math.floor(Math.random() * rows),
-          };
-        }
-
-        //Debugging only probably
-        this.bombPositions.push(pos);
-
-        //Add the bomb
-        this.getPatch(pos.x, pos.y).isBomb = true;
+        this.createBomb();
       }
 
       //Setup bombcounts and neighbors
@@ -130,14 +115,46 @@ export default defineComponent({
       return neighbors;
     },
 
+    createBomb() {
+      let pos = {
+        x: Math.floor(Math.random() * this.columns),
+        y: Math.floor(Math.random() * this.rows),
+      };
+
+      //Make sure the random position doesn't have a bomb
+      while (this.getPatch(pos.x, pos.y).isBomb === true) {
+        pos = {
+          x: Math.floor(Math.random() * this.columns),
+          y: Math.floor(Math.random() * this.rows),
+        };
+      }
+
+      //Debugging only probably
+      this.bombPositions.push(pos);
+
+      //Add the bomb
+      this.getPatch(pos.x, pos.y).isBomb = true;
+    },
+
     toggleFlag(patch: any) {
       if (patch.isRevealed || this.gameover) return;
-
       patch.isFlagged = !patch.isFlagged;
+	  this.$emit("toggleFlag", patch);
     },
 
     patchClick(patch: any) {
       if (patch.isFlagged || this.gameover) return;
+
+      if (!this.playerAlreadyClicked && patch.isBomb) {
+        let pos = { x: patch.x, y: patch.y };
+
+        while (this.getPatch(pos.x, pos.y).isBomb) {
+          this.setupGrid(this.rows, this.columns, this.bombCount);
+        }
+
+        this.playerAlreadyClicked = true;
+        patch = this.getPatch(pos.x, pos.y);
+      }
 
       if (patch.isBomb === true) {
         console.log("Fail!");
@@ -195,6 +212,9 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.bomb {
+  background-color: red;
+}
 .minefield {
   --height: 0;
   --width: calc((var(--num-cols) / var(--num-rows)) * var(--height));

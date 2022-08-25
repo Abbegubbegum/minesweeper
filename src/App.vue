@@ -12,27 +12,69 @@ import MineGrid from "@/components/MineGrid.vue";
       <input v-model="cols" type="text" id="cols" />
       <input v-model="bombCount" type="text" id="bomb-count" />
     </div>
-    <button
-      type="button"
-      @click="($refs.minefield as any).setupGrid(rows, cols, bombCount)"
-      class="submit-btn"
-    >
+    <button type="button" @click="onFormSubmit" class="submit-btn">
       Submit
     </button>
   </div>
+  <div class="label-container">
+    <h2>{{ timerLabel }}</h2>
+    <h2>{{ flagCount }} 🚩</h2>
+  </div>
+
   <main>
-    <MineGrid height="80vh" ref="minefield" />
+    <MineGrid height="80vh" ref="minefield" @toggleFlag="handleToggleFlag" />
   </main>
 </template>
 
 <script lang="ts">
+import moment from "moment";
+
 export default {
   data() {
     return {
       rows: 20,
       cols: 20,
       bombCount: 10,
+      flagCount: 10,
+      timerSeconds: 0,
+      timer: -1 as number,
     };
+  },
+  methods: {
+    handleToggleFlag(patch: any) {
+      console.log(patch);
+      this.flagCount += patch.isFlagged ? -1 : +1;
+    },
+
+    onFormSubmit() {
+      (this.$refs.minefield as any).setupGrid(
+        this.rows,
+        this.cols,
+        this.bombCount
+      );
+
+      this.flagCount = parseInt(this.bombCount as any);
+      this.startTimer();
+    },
+
+    startTimer() {
+      this.timerSeconds = 0;
+      this.timer = setInterval(() => {
+        this.timerSeconds++;
+      }, 1000);
+    },
+
+    stopTimer() {
+      clearInterval(this.timer);
+    },
+  },
+  computed: {
+    timerLabel() {
+      return moment().startOf("hour").second(this.timerSeconds).format("mm:ss");
+    },
+  },
+  mounted() {
+    this.startTimer();
   },
 };
 </script>
@@ -47,12 +89,12 @@ export default {
   min-height: 100vh;
   width: 100vw;
   display: grid;
-  grid-template: 10vh 80vh 10vh / 10vw 80vw 10vw;
+  grid-template-rows: 10vh 8vh 82vh;
+  justify-items: center;
 }
 
 main {
-  grid-row-start: 2;
-  grid-column-start: 2;
+  grid-row-start: 3;
 }
 
 .form-container {

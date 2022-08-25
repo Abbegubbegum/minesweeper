@@ -27,11 +27,12 @@ export default defineComponent({
   data() {
     return {
       patches: [] as any[],
-      bombCount: 30,
+      bombCount: 0,
       rows: 0,
       columns: 0,
 
       bombPositions: [] as any[],
+      revealedSquareCount: 0,
       gameover: false,
       playerAlreadyClicked: false,
     };
@@ -45,6 +46,7 @@ export default defineComponent({
       this.bombCount = bombCount;
       this.patches = [];
       this.bombPositions = [];
+      this.revealedSquareCount = 0;
       this.gameover = false;
       this.playerAlreadyClicked = false;
 
@@ -139,7 +141,7 @@ export default defineComponent({
     toggleFlag(patch: any) {
       if (patch.isRevealed || this.gameover) return;
       patch.isFlagged = !patch.isFlagged;
-	  this.$emit("toggleFlag", patch);
+      this.$emit("toggleFlag", patch);
     },
 
     patchClick(patch: any) {
@@ -158,8 +160,8 @@ export default defineComponent({
 
       if (patch.isBomb === true) {
         console.log("Fail!");
-        this.gameover = true;
         this.revealAllBombs();
+        this.$emit("finishGame", false);
       } else {
         this.revealPatch(patch);
       }
@@ -169,7 +171,10 @@ export default defineComponent({
       if (patch.isFlagged || patch.isRevealed) return;
 
       patch.isRevealed = true;
-
+      this.revealedSquareCount++;
+      if (this.revealedSquareCount === this.patches.length - this.bombCount) {
+        this.$emit("finishGame", true);
+      }
       if (patch.bombCount === 0) {
         patch.neighbors.forEach((neighbor: any) => {
           this.revealPatch(neighbor);
@@ -204,10 +209,6 @@ export default defineComponent({
   },
 
   props: ["height"],
-
-  mounted() {
-    this.setupGrid(20, 20, 20);
-  },
 });
 </script>
 

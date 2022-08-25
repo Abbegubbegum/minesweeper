@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import MineGrid from "@/components/MineGrid.vue";
+import ModalPopup from "@/components/ModalPopup.vue";
 </script>
 
 <template>
@@ -12,9 +13,7 @@ import MineGrid from "@/components/MineGrid.vue";
       <input v-model="cols" type="text" id="cols" />
       <input v-model="bombCount" type="text" id="bomb-count" />
     </div>
-    <button type="button" @click="onFormSubmit" class="submit-btn">
-      Submit
-    </button>
+    <button type="button" @click="startGame" class="submit-btn">Start</button>
   </div>
   <div class="label-container">
     <h2>{{ timerLabel }}</h2>
@@ -22,8 +21,24 @@ import MineGrid from "@/components/MineGrid.vue";
   </div>
 
   <main>
-    <MineGrid height="80vh" ref="minefield" @toggleFlag="handleToggleFlag" />
+    <MineGrid
+      height="80vh"
+      ref="minefield"
+      @toggle-flag="handleToggleFlag"
+      @finish-game="handleFinishGame"
+    />
   </main>
+
+  <!-- <div class="gameover-popup">
+    <h2>{{ gameoverIsWin ? "You win!" : "You lose!" }}</h2>
+  </div> -->
+
+  <ModalPopup
+    :show="showPopup"
+    :win="isWin"
+    :seconds="timerSeconds"
+    @close="showPopup = false"
+  />
 </template>
 
 <script lang="ts">
@@ -34,19 +49,26 @@ export default {
     return {
       rows: 20,
       cols: 20,
-      bombCount: 10,
-      flagCount: 10,
+      bombCount: 20,
+      flagCount: 20,
       timerSeconds: 0,
-      timer: -1 as number,
+      timer: -1,
+      isWin: false,
+      showPopup: false,
     };
   },
   methods: {
     handleToggleFlag(patch: any) {
-      console.log(patch);
       this.flagCount += patch.isFlagged ? -1 : +1;
     },
 
-    onFormSubmit() {
+    handleFinishGame(isWin: boolean) {
+      this.stopTimer();
+      this.showPopup = true;
+      this.isWin = isWin;
+    },
+
+    startGame() {
       (this.$refs.minefield as any).setupGrid(
         this.rows,
         this.cols,
@@ -59,6 +81,7 @@ export default {
 
     startTimer() {
       this.timerSeconds = 0;
+      clearInterval(this.timer);
       this.timer = setInterval(() => {
         this.timerSeconds++;
       }, 1000);
@@ -74,7 +97,7 @@ export default {
     },
   },
   mounted() {
-    this.startTimer();
+    this.startGame();
   },
 };
 </script>
@@ -120,5 +143,17 @@ label {
   align-self: center;
   margin: 0.5rem;
   padding: 0.3rem;
+}
+
+.label-container {
+  text-align: center;
+}
+
+.gameover-popup {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background-color: antiquewhite;
 }
 </style>

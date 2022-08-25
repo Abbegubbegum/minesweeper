@@ -1,19 +1,22 @@
 <template>
-  <Transition name="modal">
-    <div v-if="show" class="modal-mask">
-      <div class="modal-wrapper">
-        <div class="modal-container">
-          <h2 class="title">{{ title }}</h2>
+    <Transition name="modal">
+        <div v-if="show" class="modal-mask">
+            <div class="modal-wrapper">
+                <div class="modal-container">
+                    <h2 class="title">{{ title }}</h2>
 
-          <h3 class="timer">{{ timerLabel }}</h3>
+                    <h3 class="timer">{{ timerLabel }}</h3>
 
-          <button class="modal-default-button" @click="$emit('close')">
-            OK
-          </button>
+                    <button
+                        class="modal-default-button"
+                        @click="$emit('close')"
+                    >
+                        OK
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  </Transition>
+    </Transition>
 </template>
 
 <script lang="ts">
@@ -21,60 +24,63 @@ import moment from "moment";
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  data() {
-    return {};
-  },
-  props: {
-    show: Boolean,
-    win: Boolean,
-    seconds: Number,
-  },
-  computed: {
-    title() {
-      return this.win ? "You win!" : "You lose!";
+    data() {
+        return {};
     },
-    timerLabel() {
-      if (this.seconds && this.win)
-        return moment().startOf("hour").second(this.seconds).format("mm:ss");
+    props: {
+        show: Boolean,
+        win: Boolean,
+        seconds: Number,
     },
-  },
+    computed: {
+        title() {
+            return this.win ? "You win!" : "You lose!";
+        },
+        timerLabel() {
+            if (this.seconds && this.win)
+                return moment()
+                    .startOf("hour")
+                    .second(this.seconds)
+                    .format("mm:ss");
+        },
+    },
 });
 </script>
 
 <style>
 .modal-mask {
-  position: fixed;
-  z-index: 9998;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  transition: opacity 0.3s ease;
+    position: fixed;
+    z-index: 9998;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    transition: opacity 0.3s ease;
 }
 
 .modal-wrapper {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .modal-container {
-  width: 200px;
-  padding: 30px;
-  background-color: #fff;
-  border-radius: 2px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
-  transition: all 0.3s ease;
-  display: grid;
-  grid-auto-flow: row;
-  justify-content: center;
+    width: 200px;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 2px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
+    transition: all 0.3s ease;
+    display: grid;
+    grid-auto-flow: row;
+    justify-content: center;
 }
 
 .timer {
-  text-align: center;
-  margin: 1rem;
+    text-align: center;
+    margin: 1rem;
 }
 /*
  * The following styles are auto-applied to elements with
@@ -86,16 +92,16 @@ export default defineComponent({
  */
 
 .modal-enter-from {
-  opacity: 0;
+    opacity: 0;
 }
 
 .modal-leave-to {
-  opacity: 0;
+    opacity: 0;
 }
 
 .modal-enter-from .modal-container,
 .modal-leave-to .modal-container {
-  -webkit-transform: scale(1.1);
-  transform: scale(1.1);
+    -webkit-transform: scale(1.1);
+    transform: scale(1.1);
 }
 </style>

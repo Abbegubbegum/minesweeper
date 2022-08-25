@@ -39,6 +39,7 @@ import ModalPopup from "@/components/ModalPopup.vue";
         :show="showPopup"
         :win="isWin"
         :seconds="timerSeconds"
+        :highscore="currentHighscore"
         @close="showPopup = false"
     />
 </template>
@@ -49,14 +50,15 @@ import moment from "moment";
 export default {
     data() {
         return {
-            rows: 20,
-            cols: 20,
-            bombCount: 20,
+            rows: 16,
+            cols: 16,
+            bombCount: 40,
             flagCount: 20,
             timerSeconds: 0,
             timer: -1,
             isWin: false,
             showPopup: false,
+            currentHighscore: NaN as number,
         };
     },
     methods: {
@@ -66,8 +68,28 @@ export default {
 
         handleFinishGame(isWin: boolean) {
             this.stopTimer();
-            this.showPopup = true;
             this.isWin = isWin;
+            if (isWin) {
+                let highscore = this.getHighScore(
+                    this.rows,
+                    this.cols,
+                    this.bombCount
+                );
+                if (!highscore || highscore > this.timerSeconds) {
+                    this.setHighScore(
+                        this.rows,
+                        this.cols,
+                        this.bombCount,
+                        this.timerSeconds
+                    );
+                }
+            }
+            this.currentHighscore = this.getHighScore(
+                this.rows,
+                this.cols,
+                this.bombCount
+            );
+            this.showPopup = true;
         },
 
         startGame() {
@@ -91,6 +113,34 @@ export default {
 
         stopTimer() {
             clearInterval(this.timer);
+        },
+
+        setHighScore(
+            rows: number,
+            cols: number,
+            bombCount: number,
+            seconds: number
+        ) {
+            localStorage.setItem(
+                JSON.stringify({
+                    rows: rows,
+                    cols: cols,
+                    bombCount: bombCount,
+                }),
+                seconds.toString()
+            );
+        },
+
+        //returns -1 if highscore is not set
+        getHighScore(rows: number, cols: number, bombCount: number) {
+            let highscore = localStorage.getItem(
+                JSON.stringify({
+                    rows: rows,
+                    cols: cols,
+                    bombCount: bombCount,
+                })
+            );
+            return highscore ? parseInt(highscore) : NaN;
         },
     },
     computed: {

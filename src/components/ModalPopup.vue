@@ -5,7 +5,10 @@
                 <div class="modal-container">
                     <h2 class="title">{{ title }}</h2>
 
-                    <h3 class="timer">{{ timerLabel }}</h3>
+                    <div class="timer-container">
+                        <h3 class="timer">{{ timerLabel }}</h3>
+                        <h3 class="timer">Highscore: {{ highScoreLabel }}</h3>
+                    </div>
 
                     <button
                         class="modal-default-button"
@@ -28,20 +31,32 @@ export default defineComponent({
         return {};
     },
     props: {
-        show: Boolean,
-        win: Boolean,
-        seconds: Number,
+        show: { type: Boolean, required: true },
+        win: { type: Boolean, required: true },
+        seconds: { type: Number, required: true },
+        highscore: { type: Number, required: false },
     },
     computed: {
         title() {
             return this.win ? "You win!" : "You lose!";
         },
         timerLabel() {
-            if (this.seconds && this.win)
-                return moment()
-                    .startOf("hour")
-                    .second(this.seconds)
-                    .format("mm:ss");
+            if (this.win)
+                return (
+                    "Your time: " +
+                    moment()
+                        .startOf("hour")
+                        .second(this.seconds)
+                        .format("mm:ss")
+                );
+        },
+        highScoreLabel() {
+            if (!this.highscore) return "-";
+
+            return moment()
+                .startOf("hour")
+                .second(this.highscore)
+                .format("mm:ss");
         },
     },
 });
@@ -76,6 +91,10 @@ export default defineComponent({
     display: grid;
     grid-auto-flow: row;
     justify-content: center;
+}
+
+.title {
+    text-align: center;
 }
 
 .timer {

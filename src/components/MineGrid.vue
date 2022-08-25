@@ -155,13 +155,18 @@ export default defineComponent({
             if (!this.playerAlreadyClicked && patch.isBomb) {
                 let pos = { x: patch.x, y: patch.y };
 
-                while (this.getPatch(pos.x, pos.y).isBomb) {
+                while (
+                    this.getPatch(pos.x, pos.y).isBomb ||
+                    this.getPatch(pos.x, pos.y).bombCount !== 0
+                ) {
                     this.setupGrid(this.rows, this.columns, this.bombCount);
                 }
 
                 this.playerAlreadyClicked = true;
                 patch = this.getPatch(pos.x, pos.y);
             }
+
+            this.playerAlreadyClicked = true;
 
             if (patch.isBomb === true) {
                 console.log("Fail!");

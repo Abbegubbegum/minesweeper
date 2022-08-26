@@ -14,7 +14,10 @@
             v-for="(patch, index) in patches"
             type="button"
             :class="[
-                { bomb: patch.isBomb, revealed: patch.isRevealed },
+                {
+                    // bomb: patch.isBomb,
+                    revealed: patch.isRevealed,
+                },
                 labelClass(patch),
             ]"
             @click="patchClick(patch)"

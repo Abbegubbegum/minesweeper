@@ -31,10 +31,6 @@ import ModalPopup from "@/components/ModalPopup.vue";
         />
     </main>
 
-    <!-- <div class="gameover-popup">
-    <h2>{{ gameoverIsWin ? "You win!" : "You lose!" }}</h2>
-  </div> -->
-
     <ModalPopup
         :show="showPopup"
         :win="isWin"
